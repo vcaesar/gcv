@@ -13,15 +13,16 @@ import (
 
 // FindImgFile find image file in subfile
 func FindImgFile(file, subFile string, flag ...int) (float32, float32, image.Point, image.Point) {
+	return FindImgMat(IMRead(file, flag...), IMRead(subFile, flag...))
+}
+
+// IMRead read the image file to gocv.Mat
+func IMRead(file string, flag ...int) gocv.Mat {
 	f1 := 4
-	if len((flag)) > 0 {
+	if len(flag) > 0 {
 		f1 = flag[0]
 	}
-	flags := gocv.IMReadFlag(f1)
-	imrgb := gocv.IMRead(file, flags)
-	temp := gocv.IMRead(subFile, flags)
-
-	return FindImgMat(imrgb, temp)
+	return gocv.IMRead(file, gocv.IMReadFlag(f1))
 }
 
 // FindImg find image in the subImg
@@ -46,6 +47,9 @@ func FindImgXY(img, subImg image.Image) (int, int) {
 
 // FindImgMat find the image Mat in the temp Mat
 func FindImgMat(imRgb, temp gocv.Mat) (float32, float32, image.Point, image.Point) {
+	defer imRgb.Close()
+	defer temp.Close()
+
 	res := gocv.NewMat()
 	defer res.Close()
 	msk := gocv.NewMat()
