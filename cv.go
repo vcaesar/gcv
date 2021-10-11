@@ -1,8 +1,13 @@
+// Copyright 2016 Evans. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package gcv
 
 import (
 	"image"
 
+	"github.com/vcaesar/imgo"
 	"gocv.io/x/gocv"
 )
 
@@ -24,6 +29,13 @@ func FindImg(img, subImg image.Image) (float32, float32, image.Point, image.Poin
 	m1, _ := ImgToMat(img)
 	m2, _ := ImgToMat(subImg)
 	return FindImgMat(m1, m2)
+}
+
+// FindImgByte find image in the subImg by []byte
+func FindImgByte(img, subImg []byte) (float32, float32, image.Point, image.Point) {
+	m1, _ := imgo.ByteToImg(img)
+	m2, _ := imgo.ByteToImg(subImg)
+	return FindImg(m1, m2)
 }
 
 // FindImgXY find image in the subImg return x, y
@@ -48,4 +60,9 @@ func FindImgMat(imRgb, temp gocv.Mat) (float32, float32, image.Point, image.Poin
 // ImgToMat trans image.Image to gocv.Mat
 func ImgToMat(img image.Image) (gocv.Mat, error) {
 	return gocv.ImageToMatRGB(img)
+}
+
+// MatToImg trans gocv.Mat to image.Image
+func MatToImg(m1 gocv.Mat) (image.Image, error) {
+	return m1.ToImage()
 }
