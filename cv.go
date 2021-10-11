@@ -13,7 +13,7 @@ import (
 
 // FindImgFile find image file in subfile
 func FindImgFile(file, subFile string, flag ...int) (float32, float32, image.Point, image.Point) {
-	f1 := 0
+	f1 := 4
 	if len((flag)) > 0 {
 		f1 = flag[0]
 	}
@@ -65,4 +65,13 @@ func ImgToMat(img image.Image) (gocv.Mat, error) {
 // MatToImg trans gocv.Mat to image.Image
 func MatToImg(m1 gocv.Mat) (image.Image, error) {
 	return m1.ToImage()
+}
+
+// Show show the gocv.Mat image
+func Show(img gocv.Mat) {
+	window := gocv.NewWindow("show")
+	defer window.Close()
+	window.ResizeWindow(1200, 800)
+	window.IMShow(img)
+	window.WaitKey(0)
 }
