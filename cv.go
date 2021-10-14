@@ -81,6 +81,12 @@ func FindImgMat(imgSource, temp gocv.Mat) (float32, float32, image.Point, image.
 	return minVal, maxVal, minLoc, maxLoc
 }
 
+// FlannbasedMatch new flann based match
+func FlannbasedMatch(query, train gocv.Mat, k int) [][]gocv.DMatch {
+	fb := gocv.NewFlannBasedMatcher()
+	return fb.KnnMatch(query, train, k)
+}
+
 // ImgToMat trans image.Image to gocv.Mat
 func ImgToMat(img image.Image) (gocv.Mat, error) {
 	return gocv.ImageToMatRGB(img)
@@ -100,19 +106,34 @@ func Show(img gocv.Mat, name ...string) {
 	window := gocv.NewWindow(wName)
 	defer window.Close()
 
-	window.ResizeWindow(1200, 800)
+	window.ResizeWindow(800, 600)
 	window.IMShow(img)
 	window.WaitKey(0)
 }
 
+// Point the image X, Y point structure
+type Point struct {
+	X, Y int
+}
+
+// Size the image size structure
+type Size struct {
+	W, H int
+}
+
+// Rect the image rectangles structure
+type Rect struct {
+	TopLeft, TopRight       Point
+	BottomLeft, BottomRight Point
+}
+
 // Result find template result structure
 type Result struct {
-	MiddlePoint []int
-	TopLeft     []int
-	Rectangles  [][]int
+	Middle, TopLeft Point // maxLoc
+	Rects           Rect
 
-	Confidence []float32
-	RangeVal   []int
+	MaxVal  []float32
+	ImgSize Size
 }
 
 // FindAllImg find the search image all template in the source image return []Result
@@ -160,7 +181,7 @@ func FindMultiAllTemplate(imgSource gocv.Mat, imgSearch []gocv.Mat, args ...inte
 	return
 }
 
-// FindAllTemplate find the imgSearch all template in the imgSource return []Result
+// FindAllTemplateC find the imgSearch all template in the imgSource return []Result
 // and close gocv.Mat
 func FindAllTemplateC(imgSource, imgSearch gocv.Mat, args ...interface{}) []Result {
 	defer imgSource.Close()
@@ -217,7 +238,7 @@ func FindAllTemplate(imgSource, imgSearch gocv.Mat, args ...interface{}) []Resul
 			return nil
 		}
 
-		Fill(iGray, rs.Rectangles)
+		Fill(iGray, rs.Rects)
 		// Rectangle(iGray, maxLoc, w, h)
 		// Show(iGray)
 	}
@@ -226,26 +247,26 @@ func FindAllTemplate(imgSource, imgSearch gocv.Mat, args ...interface{}) []Resul
 }
 
 func getVal(maxLoc image.Point, maxVal float32, w, h int) Result {
-	rectangle := [][]int{
-		{maxLoc.X, maxLoc.Y},
-		{maxLoc.X, maxLoc.Y + h},
-		{maxLoc.X + w, maxLoc.Y + h},
-		{maxLoc.X + w, maxLoc.Y},
+	rect := Rect{
+		TopLeft:     Point{maxLoc.X, maxLoc.Y},
+		BottomLeft:  Point{maxLoc.X, maxLoc.Y + h},
+		BottomRight: Point{maxLoc.X + w, maxLoc.Y + h},
+		TopRight:    Point{maxLoc.X + w, maxLoc.Y},
 	}
 
 	middle := image.Pt(maxLoc.X+w/2, maxLoc.Y+h/2)
-	middlePoint := []int{middle.X, middle.Y}
+	middlePoint := Point{middle.X, middle.Y}
 
-	topLeft := []int{maxLoc.X, maxLoc.Y}
+	topLeft := Point{maxLoc.X, maxLoc.Y}
 	maxVals := []float32{maxVal}
-	rangeVal := []int{w, h}
+	size := Size{w, h}
 
 	return Result{
-		MiddlePoint: middlePoint,
-		TopLeft:     topLeft,
-		Rectangles:  rectangle,
-		Confidence:  maxVals,
-		RangeVal:    rangeVal,
+		Middle:  middlePoint,
+		TopLeft: topLeft, // MaxLoc
+		Rects:   rect,
+		MaxVal:  maxVals,
+		ImgSize: size,
 	}
 }
 
@@ -264,12 +285,12 @@ func Rectangle(iGray gocv.Mat, maxLoc image.Point, w, h int) {
 }
 
 // Fill fillpoly the iGray image
-func Fill(iGray gocv.Mat, rectangle [][]int) {
+func Fill(iGray gocv.Mat, rect Rect) {
 	pts := [][]image.Point{{
-		image.Pt(rectangle[0][0], rectangle[0][1]),
-		image.Pt(rectangle[1][0], rectangle[1][1]),
-		image.Pt(rectangle[2][0], rectangle[2][1]),
-		image.Pt(rectangle[3][0], rectangle[3][1]),
+		image.Pt(rect.TopLeft.X, rect.TopLeft.Y),
+		image.Pt(rect.BottomLeft.X, rect.BottomLeft.Y),
+		image.Pt(rect.BottomRight.X, rect.BottomLeft.Y),
+		image.Pt(rect.TopRight.X, rect.TopRight.Y),
 	}}
 
 	pts1 := gocv.NewPointsVectorFromPoints(pts)
