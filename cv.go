@@ -150,7 +150,20 @@ func FindAllImgFile(fileSearh, file string, args ...interface{}) []Result {
 	return FindAllTemplateC(IMRead(file), IMRead(fileSearh), args...)
 }
 
-// FindMultiAllImg find the multi search image all template in the source image return []Result
+// FindMultiAllImgFile find the multi file search image all template
+// in the file source image return [][]Result
+func FindMultiAllImgFile(fileSearh []string, file string, args ...interface{}) [][]Result {
+	imSource := IMRead(file)
+	var imSearch []gocv.Mat
+	for i := 0; i < len(fileSearh); i++ {
+		search := IMRead(fileSearh[i])
+		imSearch = append(imSearch, search)
+	}
+	return FindMultiAllTemplateC(imSource, imSearch, args...)
+}
+
+// FindMultiAllImg find the multi search image all template in the source image
+// return [][]Result
 func FindMultiAllImg(imgSearch []image.Image, imgSource image.Image, args ...interface{}) [][]Result {
 	imSource, _ := ImgToMat(imgSource)
 	var imSearch []gocv.Mat
@@ -165,8 +178,9 @@ func FindMultiAllImg(imgSearch []image.Image, imgSource image.Image, args ...int
 // FindMultiAllTemplate find the multi imgSearch all template in the imgSource return [][]Result
 // and close gocv.Mat
 func FindMultiAllTemplateC(imgSource gocv.Mat, imgSearch []gocv.Mat, args ...interface{}) (r [][]Result) {
+	defer imgSource.Close()
 	for i := 0; i < len(imgSearch); i++ {
-		r = append(r, FindAllTemplateC(imgSource, imgSearch[i], args...))
+		r = append(r, FindAllTemplateCS(imgSource, imgSearch[i], args...))
 	}
 
 	return
@@ -179,6 +193,14 @@ func FindMultiAllTemplate(imgSource gocv.Mat, imgSearch []gocv.Mat, args ...inte
 	}
 
 	return
+}
+
+// FindAllTemplateCS find the imgSearch all template in the imgSource return []Result
+// and close gocv.Mat
+func FindAllTemplateCS(imgSource, imgSearch gocv.Mat, args ...interface{}) []Result {
+	// defer imgSource.Close()
+	defer imgSearch.Close()
+	return FindAllTemplate(imgSource, imgSearch, args...)
 }
 
 // FindAllTemplateC find the imgSearch all template in the imgSource return []Result
