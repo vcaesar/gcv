@@ -7,7 +7,7 @@ require (
 	gocv.io/x/gocv v0.28.0
 )
 
-require github.com/go-vgo/robotgo v0.100.1
+require github.com/go-vgo/robotgo v0.100.2
 
 require (
 	github.com/StackExchange/wmi v1.2.1 // indirect
@@ -23,5 +23,5 @@ require (
 	github.com/vcaesar/gops v0.21.2 // indirect
 	github.com/vcaesar/tt v0.20.0 // indirect
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d // indirect
-	golang.org/x/sys v0.0.0-20210925032602-92d5a993a665 // indirect
+	golang.org/x/sys v0.0.0-20211013075003-97ac67df715c // indirect
 )
