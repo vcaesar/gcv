@@ -98,17 +98,104 @@ func MatToImg(m1 gocv.Mat) (image.Image, error) {
 }
 
 // Show show the gocv.Mat image
-func Show(img gocv.Mat, name ...string) {
+func Show(img gocv.Mat, args ...interface{}) {
 	wName := "show"
-	if len(name) > 0 {
-		wName = name[0]
+	if len(args) > 0 {
+		wName = args[0].(string)
 	}
+
 	window := gocv.NewWindow(wName)
 	defer window.Close()
 
-	window.ResizeWindow(800, 600)
+	h, w := GetSize(img)
+	if len(args) > 2 {
+		w = args[1].(int)
+		h = args[2].(int)
+	}
+	window.ResizeWindow(w, h)
+
 	window.IMShow(img)
 	window.WaitKey(0)
+}
+
+// GetSize get the cv.Mat width, hight
+func GetSize(img gocv.Mat) (int, int) {
+	return img.Rows(), img.Cols()
+}
+
+// Rotate rotate the image to 90, 180, 270 degrees
+func Rotate(img gocv.Mat, args ...interface{}) gocv.Mat {
+	angle := 0
+	if len(args) > 0 {
+		angle = args[0].(int)
+	}
+	code := gocv.RotateFlag(angle)
+	mask := gocv.NewMat()
+
+	gocv.Rotate(img, &mask, code)
+	return mask
+}
+
+// Crop crop the cv.Mat by rect with crabcut
+func Crop(img gocv.Mat, rect image.Rectangle) gocv.Mat {
+	mask := gocv.NewMat()
+
+	bgdModel := gocv.NewMat()
+	defer bgdModel.Close()
+	fgdModel := gocv.NewMat()
+	defer fgdModel.Close()
+
+	gocv.GrabCut(img, &mask, rect, &bgdModel, &fgdModel, 1, gocv.GCEval)
+	return mask
+}
+
+// MarkPoint mark the point draw line to img
+func MarkPoint(img gocv.Mat, point image.Point, args ...interface{}) gocv.Mat {
+	circle := false
+	if len(args) > 0 {
+		circle = args[0].(bool)
+	}
+	colors := uint8(100)
+	if len(args) > 1 {
+		colors = args[1].(uint8)
+	}
+	radius := 20
+	if len(args) > 2 {
+		radius = args[2].(int)
+	}
+
+	if circle {
+		gocv.Circle(&img, point, radius, color.RGBA{255, 0, 0, 0}, 2)
+	}
+
+	rg := color.RGBA{colors, 0, 0, 0}
+	x, y := point.X, point.Y
+	gocv.Line(&img, image.Point{x - radius, y}, image.Point{x + radius, y},
+		rg, 2)
+	gocv.Line(&img, image.Point{x, y - radius}, image.Point{x, y + radius},
+		rg, 2)
+	return img
+}
+
+// MaskImg rectangle the mark to img
+func MaskImg(img *gocv.Mat, mark image.Rectangle, args ...interface{}) {
+	lineW := -1
+	if len(args) > 1 {
+		lineW = args[1].(int)
+	}
+	offset := int(lineW / 2)
+
+	colors := color.RGBA{255, 255, 255, 0}
+	if len(args) > 0 {
+		colors = args[0].(color.RGBA)
+	}
+
+	min := mark.Min
+	max := mark.Max
+	mark = image.Rectangle{
+		Min: image.Point{min.X - offset, min.Y - offset},
+		Max: image.Point{max.X + lineW, max.Y + lineW}}
+	gocv.Rectangle(img, mark, colors, lineW)
 }
 
 // Point the image X, Y point structure
