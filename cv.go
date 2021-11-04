@@ -8,6 +8,7 @@ import (
 	"image"
 	"image/color"
 
+	"github.com/go-vgo/gt/hset"
 	"github.com/vcaesar/imgo"
 	"gocv.io/x/gocv"
 )
@@ -407,4 +408,151 @@ func Fill(iGray gocv.Mat, rect Rect) {
 
 	blue := color.RGBA{0, 0, 255, 0}
 	gocv.FillPoly(&iGray, pts1, blue)
+}
+
+func findH(kpS, kpSrc []gocv.KeyPoint, goodDiff []gocv.DMatch) (gocv.Mat, gocv.Mat) {
+	src := gocv.NewMatWithSize(4, 1, gocv.MatTypeCV64FC2)
+	defer src.Close()
+	dst := gocv.NewMatWithSize(4, 1, gocv.MatTypeCV64FC2)
+	// defer dst.Close()
+	mask := gocv.NewMat()
+	// defer mask.Close()
+
+	// Get the keypoints from the good matches
+	for i := 0; i < len(goodDiff); i++ {
+		dst.SetDoubleAt(i, 0, kpS[goodDiff[i].QueryIdx].X)
+		dst.SetDoubleAt(i, 1, kpS[goodDiff[i].QueryIdx].Y)
+
+		src.SetDoubleAt(i, 0, kpSrc[goodDiff[i].TrainIdx].X)
+		src.SetDoubleAt(i, 1, kpSrc[goodDiff[i].TrainIdx].Y)
+	}
+
+	// find estimate H
+	hm := gocv.FindHomography(src, &dst, gocv.HomograpyMethodRANSAC, 5.0,
+		&mask, 2000, 0.95)
+
+	return hm, mask
+}
+
+func transform(h, w int, hm gocv.Mat) gocv.Mat {
+	dst := gocv.NewMatWithSize(4, 2, gocv.MatTypeCV32FC2)
+	// defer dst.Close()
+
+	// new mat from the img search
+	src := gocv.NewMatWithSize(4, 2, gocv.MatTypeCV32FC2)
+	defer src.Close()
+
+	src.SetFloatAt(0, 0, 0)
+	src.SetFloatAt(0, 1, 0)
+
+	src.SetFloatAt(1, 0, 0)
+	src.SetFloatAt(1, 1, float32(h-1))
+
+	src.SetFloatAt(2, 0, float32(w-1))
+	src.SetFloatAt(2, 1, float32(h-1))
+
+	src.SetFloatAt(2, 0, float32(w-1))
+	src.SetFloatAt(3, 1, 0)
+
+	gocv.PerspectiveTransform(src, &dst, hm)
+	return dst
+}
+
+func getPoint(ms [][]gocv.DMatch, kpS, kpSrc []gocv.KeyPoint, ratio float64) []gocv.DMatch {
+	var good, goodDiff []gocv.DMatch
+
+	// Filter matches low distance by ratio
+	for i := 0; i < len(ms); i++ {
+		if ms[i][0].Distance < ratio*ms[i][1].Distance {
+			good = append(good, ms[i][0])
+		}
+	}
+
+	// Remove the duplicates point
+	h1 := hset.New()
+	for i := 0; i < len(good); i++ {
+		p1 := Point{
+			X: int(kpSrc[good[i].TrainIdx].X),
+			Y: int(kpSrc[good[i].TrainIdx].Y),
+		}
+
+		if !h1.Exists(p1) {
+			h1.Add(p1)
+			goodDiff = append(goodDiff, good[i])
+		}
+	}
+
+	return goodDiff
+}
+
+// FindAllSift find the imSearch all sift in imSource return result
+func FindAllSift(imSource, imSearch gocv.Mat, args ...interface{}) (res []Result) {
+	sift := gocv.NewSIFT()
+	defer sift.Close()
+	//
+	mask1 := gocv.NewMat()
+	defer mask1.Close()
+	mask2 := gocv.NewMat()
+	defer mask2.Close()
+
+	minMatch := 4
+	ratio := 0.75 // 0.9
+
+	// detect the feature and compute descriptor
+	kpS, des := sift.DetectAndCompute(imSearch, mask1)
+	kpSrc, deSrc := sift.DetectAndCompute(imSource, mask2)
+	if len(kpS) < 2 || len(kpSrc) < 2 || len(kpS) < minMatch {
+		return
+	}
+
+	ms := FlannbasedMatch(des, deSrc, 2)
+	goodDiff := getPoint(ms, kpS, kpSrc, ratio)
+
+	if len(goodDiff) == 0 {
+		return
+	}
+
+	h, w := GetSize(imSearch)
+	// get the result value
+	if len(goodDiff) == 1 {
+		kpt := kpSrc[goodDiff[0].TrainIdx]
+		middlePoint := Point{int(kpt.X), int(kpt.Y)}
+
+		res = append(res, Result{
+			Middle:  middlePoint,
+			MaxVal:  []float32{0.5},
+			Rects:   Rect{},
+			ImgSize: Size{w, h},
+		})
+
+		return
+	}
+
+	// if len(goodDiff) > 3 {
+	hm, mask := findH(kpS, kpSrc, goodDiff)
+	dst := transform(h, w, hm)
+	hm.Close()
+	defer mask.Close()
+	defer dst.Close()
+
+	p1 := Point{int(dst.GetFloatAt(0, 0)) + w, int(dst.GetFloatAt(0, 1))}
+	p2 := Point{int(dst.GetFloatAt(1, 0)) + w, int(dst.GetFloatAt(1, 1))}
+	p3 := Point{int(dst.GetFloatAt(2, 0)) + w, int(dst.GetFloatAt(2, 1))}
+	p4 := Point{int(dst.GetFloatAt(3, 0)) + w, int(dst.GetFloatAt(3, 1))}
+
+	res = append(res, Result{
+		Middle:  Point{p1.X / 2, p1.Y / 2},
+		TopLeft: p1,
+		Rects: Rect{
+			TopLeft:     p1,
+			BottomLeft:  p2,
+			BottomRight: p3,
+			TopRight:    p4,
+		},
+		MaxVal:  []float32{float32(mask.GetDoubleAt(h, w)), float32(len(goodDiff))},
+		ImgSize: Size{w, h},
+	})
+	// }
+
+	return
 }

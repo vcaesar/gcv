@@ -3,6 +3,7 @@ module github.com/vcaesar/gcv
 go 1.17
 
 require (
+	github.com/go-vgo/gt v0.31.0
 	github.com/vcaesar/imgo v0.30.0
 	gocv.io/x/gocv v0.28.0
 )

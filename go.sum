@@ -7,6 +7,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-ole/go-ole v1.2.5 h1:t4MGB5xEDZvXI+0rMjjsfBsD7yAgp/s9ZDkL1JndXwY=
 github.com/go-ole/go-ole v1.2.5/go.mod h1:pprOEPIfldk/42T2oK7lQ4v4JSDwmV0As9GaiUsvbm0=
+github.com/go-vgo/gt v0.31.0 h1:pgcQdnPtPbFcdHDBLqBzzEwWJ7hZ0jB1NSx7XCeoWAQ=
+github.com/go-vgo/gt v0.31.0/go.mod h1:uS9H8AeSYFuc7W1aiWjYQf5rIh5CRdw5I5JINBML6+c=
 github.com/go-vgo/robotgo v0.100.2 h1:OTkktGCvlYrG4SVr1FBA5LU9nhYx6U53ZbEISvxU5a0=
 github.com/go-vgo/robotgo v0.100.2/go.mod h1:GCjwxRFoUkuekzm02WexYBV0paDLCbrrlKEfxt/CB10=
 github.com/hybridgroup/mjpeg v0.0.0-20140228234708-4680f319790e/go.mod h1:eagM805MRKrioHYuU7iKLUyFPVKqVV6um5DAvCkUtXs=
