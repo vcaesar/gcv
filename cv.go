@@ -20,8 +20,8 @@ func FindImgFile(tempFile, file string, flag ...int) (float32, float32, image.Po
 
 // FindImg find image in the subImg
 func FindImg(subImg, imgSource image.Image) (float32, float32, image.Point, image.Point) {
-	m1, _ := ImgToMat(imgSource)
-	m2, _ := ImgToMat(subImg)
+	m1, _ := ImgToMatA(imgSource)
+	m2, _ := ImgToMatA(subImg)
 	return FindImgMatC(m1, m2)
 }
 
@@ -91,10 +91,23 @@ type Result struct {
 
 // FindAllImg find the search image all template in the source image return []Result
 func FindAllImg(imgSearch, imgSource image.Image, args ...interface{}) []Result {
-	imSource, _ := ImgToMat(imgSource)
-	imSearch, _ := ImgToMat(imgSearch)
+	imSource, _ := ImgToMatA(imgSource)
+	imSearch, _ := ImgToMatA(imgSearch)
 
 	return FindAllTemplateC(imSource, imSearch, args...)
+}
+
+// FindAll find all the img search in the img source by
+// find all template and sift and return []Result
+func FindAll(imgSearch, imgSource image.Image, args ...interface{}) []Result {
+	imSource, _ := ImgToMatA(imgSource)
+	imSearch, _ := ImgToMatA(imgSearch)
+
+	res := FindAllTemplateC(imSource, imSearch, args...)
+	if len(res) <= 0 {
+		res = FindAllSiftC(imSource, imSearch, args...)
+	}
+	return res
 }
 
 // FindAllImgFlie find the search image all template in the source image file
@@ -118,10 +131,10 @@ func FindMultiAllImgFile(fileSearh []string, file string, args ...interface{}) [
 // FindMultiAllImg find the multi search image all template in the source image
 // return [][]Result
 func FindMultiAllImg(imgSearch []image.Image, imgSource image.Image, args ...interface{}) [][]Result {
-	imSource, _ := ImgToMat(imgSource)
+	imSource, _ := ImgToMatA(imgSource)
 	var imSearch []gocv.Mat
 	for i := 0; i < len(imgSearch); i++ {
-		search, _ := ImgToMat(imgSearch[i])
+		search, _ := ImgToMatA(imgSearch[i])
 		imSearch = append(imSearch, search)
 	}
 
@@ -162,6 +175,14 @@ func FindAllTemplateC(imgSource, imgSearch gocv.Mat, args ...interface{}) []Resu
 	defer imgSource.Close()
 	defer imgSearch.Close()
 	return FindAllTemplate(imgSource, imgSearch, args...)
+}
+
+// FindAllSiftC find the imgSearch all sift in the imgSource return []Result
+// and close gocv.Mat
+func FindAllSiftC(imSource, imSearch gocv.Mat, args ...interface{}) []Result {
+	defer imSource.Close()
+	defer imSearch.Close()
+	return FindAllSift(imSource, imSearch, args...)
 }
 
 // FindAllTemplate find the imgSearch all template in the imgSource return []Result
@@ -406,7 +427,7 @@ func FindAllSift(imSource, imSearch gocv.Mat, args ...interface{}) (res []Result
 	p4 := Point{int(dst.GetFloatAt(3, 0)) + w, int(dst.GetFloatAt(3, 1))}
 
 	res = append(res, Result{
-		Middle:  Point{p1.X / 2, p1.Y / 2},
+		Middle:  Point{p1.X + p3.X/2, p1.Y + p3.Y/2},
 		TopLeft: p1,
 		Rects: Rect{
 			TopLeft:     p1,

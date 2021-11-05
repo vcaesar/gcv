@@ -1,3 +1,7 @@
+// Copyright 2016 Evans. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package gcv
 
 import (
@@ -36,6 +40,11 @@ func ImgToMat(img image.Image) (gocv.Mat, error) {
 	return gocv.ImageToMatRGB(img)
 }
 
+// ImgToMatA trans image.Image to gocv.Mat
+func ImgToMatA(img image.Image) (gocv.Mat, error) {
+	return gocv.ImageToMatRGBA(img)
+}
+
 // MatToImg trans gocv.Mat to image.Image
 func MatToImg(m1 gocv.Mat) (image.Image, error) {
 	return m1.ToImage()
@@ -65,6 +74,13 @@ func Show(img gocv.Mat, args ...interface{}) {
 // GetSize get the cv.Mat width, hight
 func GetSize(img gocv.Mat) (int, int) {
 	return img.Rows(), img.Cols()
+}
+
+// Resize resize the image
+func Resize(img gocv.Mat, sz image.Point, w, h float64) gocv.Mat {
+	dst := gocv.NewMat()
+	gocv.Resize(img, &dst, sz, w, h, gocv.InterpolationFlags(1))
+	return dst
 }
 
 // Rotate rotate the image to 90, 180, 270 degrees
