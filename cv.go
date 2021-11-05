@@ -32,8 +32,8 @@ func FindImgByte(subImg, imgSource []byte) (float32, float32, image.Point, image
 	return FindImg(m2, m1)
 }
 
-// FindImgXY find image in the subImg return x, y
-func FindImgXY(subImg, imgSource image.Image) (int, int) {
+// FindImgX find image in the subImg return x, y
+func FindImgX(subImg, imgSource image.Image) (int, int) {
 	_, _, _, maxLoc := FindImg(subImg, imgSource)
 	return maxLoc.X, maxLoc.Y
 }
@@ -87,6 +87,24 @@ type Result struct {
 
 	MaxVal  []float32
 	ImgSize Size
+}
+
+// Find find all the img search in the img source by
+// find all template and sift and return Result
+func Find(imgSearch, imgSource image.Image, args ...interface{}) (r Result) {
+	res := FindAll(imgSearch, imgSource, args...)
+	if len(res) > 0 {
+		r = res[0]
+	}
+	return
+}
+
+// FindX find all the img search in the img source by
+// find all template and sift and return x, y
+func FindX(imgSearch, imgSource image.Image, args ...interface{}) (x, y int) {
+	res := Find(imgSearch, imgSource, args...)
+	x, y = res.Middle.X, res.Middle.Y
+	return
 }
 
 // FindAllImg find the search image all template in the source image return []Result
