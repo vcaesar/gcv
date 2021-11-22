@@ -5,10 +5,10 @@ go 1.17
 require (
 	github.com/go-vgo/gt v0.31.0
 	github.com/vcaesar/imgo v0.30.0
-	gocv.io/x/gocv v0.28.0
+	gocv.io/x/gocv v0.29.0
 )
 
-require github.com/go-vgo/robotgo v0.100.2
+require github.com/go-vgo/robotgo v0.100.8
 
 require (
 	github.com/StackExchange/wmi v1.2.1 // indirect
