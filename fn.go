@@ -50,7 +50,7 @@ func MatToImg(m1 gocv.Mat) (image.Image, error) {
 	return m1.ToImage()
 }
 
-// Show show the gocv.Mat image
+// Show show the gocv.Mat image in the window
 func Show(img gocv.Mat, args ...interface{}) {
 	wName := "show"
 	if len(args) > 0 {
@@ -60,7 +60,8 @@ func Show(img gocv.Mat, args ...interface{}) {
 	window := gocv.NewWindow(wName)
 	defer window.Close()
 
-	h, w := GetSize(img)
+	// h, w := GetSize(img)
+	h, w := 600, 800
 	if len(args) > 2 {
 		w = args[1].(int)
 		h = args[2].(int)

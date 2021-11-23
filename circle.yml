@@ -7,12 +7,17 @@ jobs:
     working_directory: /gopath/src/github.com/vcaesar/gcv
     steps:
       - checkout
-      # - run:
-      #     name: "Build & Test"
-      #     command: make dev
+      - run: apt update
+      - run: apt -y install gcc libc6-dev
+          libx11-dev xorg-dev libxtst-dev libpng++-dev
+          xcb libxcb-xkb-dev x11-xkb-utils libx11-xcb-dev libxkbcommon-x11-dev
+          libxkbcommon-dev
+          xsel xclip
+          opencv
+      - run: apt -y install xvfb
       # specify any bash command here prefixed with `run: `
       - run: go get -v -t -d ./...
-      - run: go test -v ./...
+      - run: xvfb-run go test -v ./...
       # codecov.io
       - run: go test -v -covermode=count -coverprofile=coverage.out
       - run: bash <(curl -s https://codecov.io/bash)
