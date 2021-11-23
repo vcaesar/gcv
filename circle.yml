@@ -13,7 +13,7 @@ jobs:
           xcb libxcb-xkb-dev x11-xkb-utils libx11-xcb-dev libxkbcommon-x11-dev
           libxkbcommon-dev
           xsel xclip
-          opencv
+          libopencv-dev
       - run: apt -y install xvfb
       # specify any bash command here prefixed with `run: `
       - run: go get -v -t -d ./...
