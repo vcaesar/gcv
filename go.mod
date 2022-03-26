@@ -4,9 +4,9 @@ go 1.17
 
 require (
 	github.com/go-vgo/gt v0.31.0
-	github.com/go-vgo/robotgo v1.0.0-beta5
+	github.com/go-vgo/robotgo v1.0.0-beta5.1
 	github.com/vcaesar/imgo v0.30.1
-	gocv.io/x/gocv v0.29.0
+	gocv.io/x/gocv v0.30.0
 )
 
 require (
