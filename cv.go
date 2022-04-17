@@ -107,6 +107,17 @@ func FindX(imgSearch, imgSource image.Image, args ...interface{}) (x, y int) {
 	return
 }
 
+// FindAllX find all the img search in the img source by
+// find all template and sift and return []x, []y
+func FindAllX(imgSearch, imgSource image.Image, args ...interface{}) (x, y []int) {
+	res := FindAll(imgSearch, imgSource, args...)
+	for i := 0; i < len(res); i++ {
+		x = append(x, res[i].Middle.X)
+		y = append(y, res[i].Middle.Y)
+	}
+	return
+}
+
 // FindAllImg find the search image all template in the source image return []Result
 func FindAllImg(imgSearch, imgSource image.Image, args ...interface{}) []Result {
 	imSource, _ := ImgToMatA(imgSource)
