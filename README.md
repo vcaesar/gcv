@@ -8,6 +8,9 @@
 [![GoDoc](https://godoc.org/github.com/vcaesar/gcv?status.svg)](https://godoc.org/github.com/vcaesar/gcv)
 [![Release](https://github-release-version.herokuapp.com/github/vcaesar/gcv/release.svg?style=flat)](https://github.com/vcaesar/gcv/releases/latest)
 
+## Install
+
+You should make sure Golang, GCC, and [OpenCV](https://gocv.io/getting-started/linux/) installed correctly before starting.
 
 ## Use
 
