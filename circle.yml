@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: golang:1.22.0
+      - image: golang:1.23.0
     working_directory: /gopath/src/github.com/vcaesar/gcv
     steps:
       - checkout
