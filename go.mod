@@ -8,7 +8,7 @@ require (
 	github.com/go-vgo/gt v0.41.0
 	github.com/go-vgo/robotgo v0.110.3
 	github.com/vcaesar/imgo v0.40.2
-	gocv.io/x/gocv v0.37.0
+	gocv.io/x/gocv v0.38.0
 )
 
 require (
