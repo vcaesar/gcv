@@ -9,8 +9,8 @@ import (
 
 func main() {
 	// save images
-	img := robotgo.CaptureImg()
-	img1 := robotgo.CaptureImg(18, 4, 20, 20)
+	img, _ := robotgo.CaptureImg()
+	img1, _ := robotgo.CaptureImg(18, 4, 20, 20)
 
 	rs := gcv.FindAllImg(img1, img)
 	if len(rs) > 0 {
