@@ -343,7 +343,7 @@ func findH(kpS, kpSrc []gocv.KeyPoint, goodDiff []gocv.DMatch) (gocv.Mat, gocv.M
 	}
 
 	// find estimate H
-	hm := gocv.FindHomography(src, &dst, gocv.HomograpyMethodRANSAC, 5.0,
+	hm := gocv.FindHomography(src, &dst, gocv.HomographyMethodRANSAC, 5.0,
 		&mask, 2000, 0.95)
 
 	return hm, mask
