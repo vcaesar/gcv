@@ -326,9 +326,9 @@ func Fill(iGray gocv.Mat, rect Rect) {
 }
 
 func findH(kpS, kpSrc []gocv.KeyPoint, goodDiff []gocv.DMatch) (gocv.Mat, gocv.Mat) {
-	src := gocv.NewMatWithSize(4, 1, gocv.MatTypeCV64FC2)
+	src := gocv.NewMatWithSize(len(goodDiff), 1, gocv.MatTypeCV64FC2)
 	defer src.Close()
-	dst := gocv.NewMatWithSize(4, 1, gocv.MatTypeCV64FC2)
+	dst := gocv.NewMatWithSize(len(goodDiff), 1, gocv.MatTypeCV64FC2)
 	// defer dst.Close()
 	mask := gocv.NewMat()
 	// defer mask.Close()
