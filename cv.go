@@ -366,7 +366,7 @@ func transform(h, w int, hm gocv.Mat) gocv.Mat {
 	src.SetFloatAt(2, 0, float32(w-1))
 	src.SetFloatAt(2, 1, float32(h-1))
 
-	src.SetFloatAt(2, 0, float32(w-1))
+	src.SetFloatAt(3, 0, float32(w-1))
 	src.SetFloatAt(3, 1, 0)
 
 	gocv.PerspectiveTransform(src, &dst, hm)
