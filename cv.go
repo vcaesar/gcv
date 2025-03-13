@@ -326,9 +326,9 @@ func Fill(iGray gocv.Mat, rect Rect) {
 }
 
 func findH(kpS, kpSrc []gocv.KeyPoint, goodDiff []gocv.DMatch) (gocv.Mat, gocv.Mat) {
-	src := gocv.NewMatWithSize(4, 1, gocv.MatTypeCV64FC2)
+	src := gocv.NewMatWithSize(len(goodDiff), 1, gocv.MatTypeCV64FC2)
 	defer src.Close()
-	dst := gocv.NewMatWithSize(4, 1, gocv.MatTypeCV64FC2)
+	dst := gocv.NewMatWithSize(len(goodDiff), 1, gocv.MatTypeCV64FC2)
 	// defer dst.Close()
 	mask := gocv.NewMat()
 	// defer mask.Close()
@@ -366,7 +366,7 @@ func transform(h, w int, hm gocv.Mat) gocv.Mat {
 	src.SetFloatAt(2, 0, float32(w-1))
 	src.SetFloatAt(2, 1, float32(h-1))
 
-	src.SetFloatAt(2, 0, float32(w-1))
+	src.SetFloatAt(3, 0, float32(w-1))
 	src.SetFloatAt(3, 1, 0)
 
 	gocv.PerspectiveTransform(src, &dst, hm)
