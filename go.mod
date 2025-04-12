@@ -6,7 +6,7 @@ toolchain go1.24.1
 
 require (
 	github.com/go-vgo/gt v0.42.0
-	github.com/go-vgo/robotgo v0.110.6
+	github.com/go-vgo/robotgo v0.110.7
 	github.com/vcaesar/imgo v0.40.2
 	gocv.io/x/gocv v0.40.0
 )
