@@ -456,7 +456,7 @@ func FindAllSift(imSource, imSearch gocv.Mat, args ...interface{}) (res []Result
 	p4 := Point{int(dst.GetFloatAt(3, 0)), int(dst.GetFloatAt(3, 1))}
 
 	res = append(res, Result{
-		Middle:  Point{p1.X + p3.X/2, p1.Y + p3.Y/2},
+		Middle:  Point{p1.X + (p3.X-p1.X)/2, p1.Y + (p3.Y-p1.Y)/2},
 		TopLeft: p1,
 		Rects: Rect{
 			TopLeft:     p1,
