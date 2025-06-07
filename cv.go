@@ -209,8 +209,8 @@ func FindAllTemplateC(imgSource, imgSearch gocv.Mat, args ...interface{}) []Resu
 // FindAllSiftC find the imgSearch all sift in the imgSource return []Result
 // and close gocv.Mat
 func FindAllSiftC(matSource, matSearch gocv.Mat, args ...interface{}) []Result {
-	defer matSource.Close()
-	defer matSearch.Close()
+	// defer matSource.Close()
+	// defer matSearch.Close()
 	return FindAllSift(matSource, matSearch, args...)
 }
 
@@ -426,6 +426,8 @@ func FindAllSift(matSource, matSearch gocv.Mat, args ...interface{}) (res []Resu
 	if len(goodDiff) == 0 {
 		return
 	}
+	defer matSearch.Close()
+	defer matSource.Close()
 
 	h, w := GetSize(matSearch)
 	// get the result value
