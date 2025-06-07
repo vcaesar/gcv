@@ -326,20 +326,20 @@ func Fill(iGray gocv.Mat, rect Rect) {
 }
 
 func findH(kpS, kpSrc []gocv.KeyPoint, goodDiff []gocv.DMatch) (gocv.Mat, gocv.Mat) {
-	src := gocv.NewMatWithSize(4, 1, gocv.MatTypeCV64FC2)
+	src := gocv.NewMatWithSize(len(goodDiff), 1, gocv.MatTypeCV64FC2)
 	defer src.Close()
-	dst := gocv.NewMatWithSize(4, 1, gocv.MatTypeCV64FC2)
+	dst := gocv.NewMatWithSize(len(goodDiff), 1, gocv.MatTypeCV64FC2)
 	// defer dst.Close()
 	mask := gocv.NewMat()
 	// defer mask.Close()
 
 	// Get the keypoints from the good matches
 	for i := 0; i < len(goodDiff); i++ {
-		dst.SetDoubleAt(i, 0, kpS[goodDiff[i].QueryIdx].X)
-		dst.SetDoubleAt(i, 1, kpS[goodDiff[i].QueryIdx].Y)
+		src.SetDoubleAt(i, 0, kpS[goodDiff[i].QueryIdx].X)
+		src.SetDoubleAt(i, 1, kpS[goodDiff[i].QueryIdx].Y)
 
-		src.SetDoubleAt(i, 0, kpSrc[goodDiff[i].TrainIdx].X)
-		src.SetDoubleAt(i, 1, kpSrc[goodDiff[i].TrainIdx].Y)
+		dst.SetDoubleAt(i, 0, kpSrc[goodDiff[i].TrainIdx].X)
+		dst.SetDoubleAt(i, 1, kpSrc[goodDiff[i].TrainIdx].Y)
 	}
 
 	// find estimate H
@@ -366,7 +366,7 @@ func transform(h, w int, hm gocv.Mat) gocv.Mat {
 	src.SetFloatAt(2, 0, float32(w-1))
 	src.SetFloatAt(2, 1, float32(h-1))
 
-	src.SetFloatAt(2, 0, float32(w-1))
+	src.SetFloatAt(3, 0, float32(w-1))
 	src.SetFloatAt(3, 1, 0)
 
 	gocv.PerspectiveTransform(src, &dst, hm)
@@ -450,13 +450,13 @@ func FindAllSift(imSource, imSearch gocv.Mat, args ...interface{}) (res []Result
 	defer mask.Close()
 	defer dst.Close()
 
-	p1 := Point{int(dst.GetFloatAt(0, 0)) + w, int(dst.GetFloatAt(0, 1))}
-	p2 := Point{int(dst.GetFloatAt(1, 0)) + w, int(dst.GetFloatAt(1, 1))}
-	p3 := Point{int(dst.GetFloatAt(2, 0)) + w, int(dst.GetFloatAt(2, 1))}
-	p4 := Point{int(dst.GetFloatAt(3, 0)) + w, int(dst.GetFloatAt(3, 1))}
+	p1 := Point{int(dst.GetFloatAt(0, 0)), int(dst.GetFloatAt(0, 1))}
+	p2 := Point{int(dst.GetFloatAt(1, 0)), int(dst.GetFloatAt(1, 1))}
+	p3 := Point{int(dst.GetFloatAt(2, 0)), int(dst.GetFloatAt(2, 1))}
+	p4 := Point{int(dst.GetFloatAt(3, 0)), int(dst.GetFloatAt(3, 1))}
 
 	res = append(res, Result{
-		Middle:  Point{p1.X + p3.X/2, p1.Y + p3.Y/2},
+		Middle:  Point{p1.X + (p3.X-p1.X)/2, p1.Y + (p3.Y-p1.Y)/2},
 		TopLeft: p1,
 		Rects: Rect{
 			TopLeft:     p1,
