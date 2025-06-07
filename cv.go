@@ -1,6 +1,9 @@
 // Copyright 2016 Evans. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0>
+// This file may not be copied, modified, or distributed
+// except according to those terms.
 
 package gcv
 
@@ -215,7 +218,7 @@ func FindAllSiftC(matSource, matSearch gocv.Mat, args ...interface{}) []Result {
 }
 
 // FindAllTemplate find the imgSearch all template in the imgSource return []Result
-func FindAllTemplate(imgSource, imgSearch gocv.Mat, args ...interface{}) []Result {
+func FindAllTemplate(matSource, matSearch gocv.Mat, args ...interface{}) []Result {
 	threshold := float32(0.8)
 	if len(args) > 0 {
 		threshold = float32(args[0].(float64))
@@ -241,14 +244,14 @@ func FindAllTemplate(imgSource, imgSearch gocv.Mat, args ...interface{}) []Resul
 	defer sGray.Close()
 
 	// if !rgb {
-	gocv.CvtColor(imgSource, &iGray, gocv.ColorRGBToGray)
-	gocv.CvtColor(imgSearch, &sGray, gocv.ColorRGBToGray)
+	gocv.CvtColor(matSource, &iGray, gocv.ColorRGBToGray)
+	gocv.CvtColor(matSearch, &sGray, gocv.ColorRGBToGray)
 	// }
 
 	results := make([]Result, 0)
 	for {
 		_, maxVal, minLoc, maxLoc := FindImgMat(iGray, sGray)
-		h, w := imgSearch.Rows(), imgSearch.Cols()
+		h, w := matSearch.Rows(), matSearch.Cols()
 		if maxVal < threshold || len(results) > maxCount {
 			break
 		}
@@ -457,6 +460,7 @@ func FindAllSift(matSource, matSearch gocv.Mat, args ...interface{}) (res []Resu
 	p3 := Point{int(dst.GetFloatAt(2, 0)), int(dst.GetFloatAt(2, 1))}
 	p4 := Point{int(dst.GetFloatAt(3, 0)), int(dst.GetFloatAt(3, 1))}
 
+	at := h / w
 	res = append(res, Result{
 		Middle:  Point{p1.X + (p3.X-p1.X)/2, p1.Y + (p3.Y-p1.Y)/2},
 		TopLeft: p1,
@@ -466,7 +470,7 @@ func FindAllSift(matSource, matSearch gocv.Mat, args ...interface{}) (res []Resu
 			BottomRight: p3,
 			TopRight:    p4,
 		},
-		MaxVal:  []float32{float32(mask.GetDoubleAt(h, w)), float32(len(goodDiff))},
+		MaxVal:  []float32{float32(at), float32(len(goodDiff))},
 		ImgSize: Size{w, h},
 	})
 	// }
