@@ -120,21 +120,21 @@ func FindAllX(imgSearch, imgSource image.Image, args ...interface{}) (x, y []int
 
 // FindAllImg find the search image all template in the source image return []Result
 func FindAllImg(imgSearch, imgSource image.Image, args ...interface{}) []Result {
-	imSource, _ := ImgToMatA(imgSource)
-	imSearch, _ := ImgToMatA(imgSearch)
+	matSource, _ := ImgToMatA(imgSource)
+	matSearch, _ := ImgToMatA(imgSearch)
 
-	return FindAllTemplateC(imSource, imSearch, args...)
+	return FindAllTemplateC(matSource, matSearch, args...)
 }
 
 // FindAll find all the img search in the img source by
 // find all template and sift and return []Result
 func FindAll(imgSearch, imgSource image.Image, args ...interface{}) []Result {
-	imSource, _ := ImgToMatA(imgSource)
-	imSearch, _ := ImgToMatA(imgSearch)
+	matSource, _ := ImgToMatA(imgSource)
+	matSearch, _ := ImgToMatA(imgSearch)
 
-	res := FindAllTemplateC(imSource, imSearch, args...)
+	res := FindAllTemplateC(matSource, matSearch, args...)
 	if len(res) <= 0 {
-		res = FindAllSiftC(imSource, imSearch, args...)
+		res = FindAllSiftC(matSource, matSearch, args...)
 	}
 	return res
 }
@@ -148,26 +148,26 @@ func FindAllImgFile(fileSearh, file string, args ...interface{}) []Result {
 // FindMultiAllImgFile find the multi file search image all template
 // in the file source image return [][]Result
 func FindMultiAllImgFile(fileSearh []string, file string, args ...interface{}) [][]Result {
-	imSource := IMRead(file)
-	var imSearch []gocv.Mat
+	matSource := IMRead(file)
+	var matSearch []gocv.Mat
 	for i := 0; i < len(fileSearh); i++ {
 		search := IMRead(fileSearh[i])
-		imSearch = append(imSearch, search)
+		matSearch = append(matSearch, search)
 	}
-	return FindMultiAllTemplateC(imSource, imSearch, args...)
+	return FindMultiAllTemplateC(matSource, matSearch, args...)
 }
 
 // FindMultiAllImg find the multi search image all template in the source image
 // return [][]Result
 func FindMultiAllImg(imgSearch []image.Image, imgSource image.Image, args ...interface{}) [][]Result {
-	imSource, _ := ImgToMatA(imgSource)
-	var imSearch []gocv.Mat
+	matSource, _ := ImgToMatA(imgSource)
+	var matSearch []gocv.Mat
 	for i := 0; i < len(imgSearch); i++ {
 		search, _ := ImgToMatA(imgSearch[i])
-		imSearch = append(imSearch, search)
+		matSearch = append(matSearch, search)
 	}
 
-	return FindMultiAllTemplateC(imSource, imSearch, args...)
+	return FindMultiAllTemplateC(matSource, matSearch, args...)
 }
 
 // FindMultiAllTemplate find the multi imgSearch all template in the imgSource return [][]Result
@@ -208,10 +208,10 @@ func FindAllTemplateC(imgSource, imgSearch gocv.Mat, args ...interface{}) []Resu
 
 // FindAllSiftC find the imgSearch all sift in the imgSource return []Result
 // and close gocv.Mat
-func FindAllSiftC(imSource, imSearch gocv.Mat, args ...interface{}) []Result {
-	defer imSource.Close()
-	defer imSearch.Close()
-	return FindAllSift(imSource, imSearch, args...)
+func FindAllSiftC(matSource, matSearch gocv.Mat, args ...interface{}) []Result {
+	defer matSource.Close()
+	defer matSearch.Close()
+	return FindAllSift(matSource, matSearch, args...)
 }
 
 // FindAllTemplate find the imgSearch all template in the imgSource return []Result
@@ -400,8 +400,8 @@ func getPoint(ms [][]gocv.DMatch, kpS, kpSrc []gocv.KeyPoint, ratio float64) []g
 	return goodDiff
 }
 
-// FindAllSift find the imSearch all sift in imSource return result
-func FindAllSift(imSource, imSearch gocv.Mat, args ...interface{}) (res []Result) {
+// FindAllSift find the matSearch all sift in matSource return result
+func FindAllSift(matSource, matSearch gocv.Mat, args ...interface{}) (res []Result) {
 	sift := gocv.NewSIFT()
 	defer sift.Close()
 	//
@@ -414,8 +414,8 @@ func FindAllSift(imSource, imSearch gocv.Mat, args ...interface{}) (res []Result
 	ratio := 0.75 // 0.9
 
 	// detect the feature and compute descriptor
-	kpS, des := sift.DetectAndCompute(imSearch, mask1)
-	kpSrc, deSrc := sift.DetectAndCompute(imSource, mask2)
+	kpS, des := sift.DetectAndCompute(matSearch, mask1)
+	kpSrc, deSrc := sift.DetectAndCompute(matSource, mask2)
 	if len(kpS) < 2 || len(kpSrc) < 2 || len(kpS) < minMatch {
 		return
 	}
@@ -427,7 +427,7 @@ func FindAllSift(imSource, imSearch gocv.Mat, args ...interface{}) (res []Result
 		return
 	}
 
-	h, w := GetSize(imSearch)
+	h, w := GetSize(matSearch)
 	// get the result value
 	if len(goodDiff) == 1 {
 		kpt := kpSrc[goodDiff[0].TrainIdx]
