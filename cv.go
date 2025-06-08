@@ -16,6 +16,11 @@ import (
 	"gocv.io/x/gocv"
 )
 
+var (
+	// Sift use the Sift mode default when find template result <=0
+	Sift = true
+)
+
 // FindImgFile find image file in subfile
 func FindImgFile(tempFile, file string, flag ...int) (float32, float32, image.Point, image.Point) {
 	return FindImgMatC(IMRead(file, flag...), IMRead(tempFile, flag...))
@@ -136,7 +141,7 @@ func FindAll(imgSearch, imgSource image.Image, args ...interface{}) []Result {
 	matSearch, _ := ImgToMatA(imgSearch)
 
 	res := FindAllTemplateC(matSource, matSearch, args...)
-	if len(res) <= 0 {
+	if len(res) <= 0 && Sift {
 		res = FindAllSiftC(matSource, matSearch, args...)
 	}
 	return res
