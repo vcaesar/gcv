@@ -98,7 +98,8 @@ type Result struct {
 }
 
 // Find find all the img search in the img source by
-// find all template and sift and return Result
+// find all template and sift and return Result,
+// if args[] > 0 use the find template
 func Find(imgSearch, imgSource image.Image, args ...interface{}) (r Result) {
 	res := FindAll(imgSearch, imgSource, args...)
 	if len(res) > 0 {
@@ -147,6 +148,14 @@ func FindAll(imgSearch, imgSource image.Image, args ...interface{}) []Result {
 	return res
 }
 
+// FindAllImgSift find all imag search by opencv sift
+func FindAllImgSift(imgSearch, imgSource image.Image, args ...interface{}) []Result {
+	matSource, _ := ImgToMatA(imgSource) // matSource
+	matSearch, _ := ImgToMatA(imgSearch)
+
+	return FindAllSiftC(matSource, matSearch, args...)
+}
+
 // FindAllImgFlie find the search image all template in the source image file
 // return []Result
 func FindAllImgFile(fileSearh, file string, args ...interface{}) []Result {
@@ -181,11 +190,11 @@ func FindMultiAllImg(imgSearch []image.Image, imgSource image.Image, args ...int
 // FindMultiAllTemplate find the multi imgSearch all template in the imgSource return [][]Result
 // and close gocv.Mat
 func FindMultiAllTemplateC(imgSource gocv.Mat, imgSearch []gocv.Mat, args ...interface{}) (r [][]Result) {
-	defer imgSource.Close()
 	for i := 0; i < len(imgSearch); i++ {
 		r = append(r, FindAllTemplateCS(imgSource, imgSearch[i], args...))
 	}
-
+	// defer imgSearch.Close()
+	defer imgSource.Close()
 	return
 }
 
@@ -209,17 +218,23 @@ func FindAllTemplateCS(imgSource, imgSearch gocv.Mat, args ...interface{}) []Res
 // FindAllTemplateC find the imgSearch all template in the imgSource return []Result
 // and close gocv.Mat
 func FindAllTemplateC(imgSource, imgSearch gocv.Mat, args ...interface{}) []Result {
-	defer imgSource.Close()
-	defer imgSearch.Close()
-	return FindAllTemplate(imgSource, imgSearch, args...)
+	res := FindAllTemplate(imgSource, imgSearch, args...)
+	if len(args) <= 3 || (len(args) > 3 && !args[3].(bool)) {
+		defer imgSearch.Close()
+		defer imgSource.Close()
+	}
+	return res
 }
 
 // FindAllSiftC find the imgSearch all sift in the imgSource return []Result
 // and close gocv.Mat
 func FindAllSiftC(matSource, matSearch gocv.Mat, args ...interface{}) []Result {
-	// defer matSource.Close()
-	// defer matSearch.Close()
-	return FindAllSift(matSource, matSearch, args...)
+	res := FindAllSift(matSource, matSearch, args...)
+	if len(res) > 0 {
+		defer matSearch.Close()
+		defer matSource.Close()
+	}
+	return res
 }
 
 // FindAllTemplate find the imgSearch all template in the imgSource return []Result
@@ -233,14 +248,19 @@ func FindAllTemplate(matSource, matSearch gocv.Mat, args ...interface{}) []Resul
 	if len(args) > 1 {
 		maxCount = args[1].(int)
 	}
-	// rgb := false
-	// if len(args) > 2 {
-	// 	rgb = args[2].(bool)
-	// }
+	rgb := false
+	if len(args) > 3 {
+		rgb = args[3].(bool)
+	}
+
+	bgremove := false
+	if len(args) > 2 {
+		bgremove = args[2].(bool)
+	}
 
 	method := false
-	if len(args) > 3 {
-		method = args[3].(bool)
+	if len(args) > 4 {
+		method = args[4].(bool)
 	}
 
 	iGray := gocv.NewMat()
@@ -248,10 +268,18 @@ func FindAllTemplate(matSource, matSearch gocv.Mat, args ...interface{}) []Resul
 	sGray := gocv.NewMat()
 	defer sGray.Close()
 
-	// if !rgb {
-	gocv.CvtColor(matSource, &iGray, gocv.ColorRGBToGray)
-	gocv.CvtColor(matSearch, &sGray, gocv.ColorRGBToGray)
-	// }
+	if !rgb {
+		gocv.CvtColor(matSearch, &sGray, gocv.ColorRGBToGray)
+		gocv.CvtColor(matSource, &iGray, gocv.ColorRGBToGray)
+	} else {
+		sGray = matSearch
+		iGray = matSource
+	}
+
+	if bgremove {
+		gocv.Canny(matSearch, &sGray, 100, 200)
+		gocv.Canny(matSource, &iGray, 100, 200)
+	}
 
 	results := make([]Result, 0)
 	for {
@@ -337,7 +365,7 @@ func findH(kpS, kpSrc []gocv.KeyPoint, goodDiff []gocv.DMatch) (gocv.Mat, gocv.M
 	src := gocv.NewMatWithSize(len(goodDiff), 1, gocv.MatTypeCV64FC2)
 	defer src.Close()
 	dst := gocv.NewMatWithSize(len(goodDiff), 1, gocv.MatTypeCV64FC2)
-	// defer dst.Close()
+	defer dst.Close()
 	mask := gocv.NewMat()
 	// defer mask.Close()
 
@@ -434,8 +462,8 @@ func FindAllSift(matSource, matSearch gocv.Mat, args ...interface{}) (res []Resu
 	if len(goodDiff) == 0 {
 		return
 	}
-	defer matSearch.Close()
-	defer matSource.Close()
+	// defer matSearch.Close()
+	// defer matSource.Close()
 
 	h, w := GetSize(matSearch)
 	// get the result value
