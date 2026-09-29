@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 env:
-  CGO_ENABLED: '1'
+  CGO_ENABLED: "1"
 
 jobs:
   test:
@@ -29,7 +29,16 @@ jobs:
 
       - name: Install OpenCV on macOS
         if: runner.os == 'macOS'
-        run: brew install opencv pkg-config
+        run: |
+          brew install opencv@4 pkg-config
+          opencv_prefix=$(brew --prefix opencv@4)
+          echo "PKG_CONFIG_PATH=$opencv_prefix/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
+
+      - name: Verify OpenCV on macOS
+        if: runner.os == 'macOS'
+        run: |
+          pkg-config --modversion opencv4
+          pkg-config --cflags --libs opencv4
 
       - name: Configure MinGW on Windows
         if: runner.os == 'Windows'
@@ -69,7 +78,7 @@ jobs:
         if: runner.os == 'Windows' && steps.cache-opencv.outputs.cache-hit != 'true'
         shell: cmd
         env:
-          CMAKE_BUILD_PARALLEL_LEVEL: '2'
+          CMAKE_BUILD_PARALLEL_LEVEL: "2"
         run: call .\test\tmp\win_build_opencv.cmd || exit /b 1
 
       - name: Add OpenCV to PATH on Windows
